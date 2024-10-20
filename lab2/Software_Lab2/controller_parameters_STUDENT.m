@@ -1,6 +1,6 @@
-clc;
-clear;
-close all;
+%clc;
+%clear;
+%close all;
 
 %% ************** 5ESD0 - Control Systems, Lab 2 - Student file **************
 load('RL_ML_busses.mat'); % Load in busses if simulation is also run from this file
