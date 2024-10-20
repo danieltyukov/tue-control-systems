@@ -60,6 +60,13 @@ G = tf(num, den);
 controllability = rank(ctrb(A, B));
 observability = rank(obsv(A, C));
 
+% check whether controllable and observable
+if controllability == size(A, 1) && observability == size(A, 1)
+    disp('System is controllable and observable')
+else
+    disp('System is not controllable and/or observable')
+end
+
 %% Statefeedback
 tn = [0 0 1]*inv([B A*B (A^2)*B]);
 T  = inv([tn*A^2; tn*A; tn]); % this is basically T-1 inverted...
@@ -71,10 +78,34 @@ T  = inv([tn*A^2; tn*A; tn]); % this is basically T-1 inverted...
 poles = [-1000, -60, -30];   % Desired pole locations
 K = place(A, B, poles);      % State feedback gain matrix
 
+% Print the state feedback gain K
+disp('State Feedback Gain K:');
+disp(K);
+
+% Verify that the closed-loop poles are at the desired locations
+Acl = A - B * K;                     % Closed-loop system matrix
+closed_loop_poles = eig(Acl);        % Closed-loop eigenvalues
+disp('Closed-loop Eigenvalues with State Feedback:');
+disp(closed_loop_poles);
+
 %% State observer
-% Pole placement for state observer
-observer_poles = [-1000, -200, -100];  % Observer poles
-L = place(A', C', observer_poles)';    % Observer gain matrix
+%% State Observer
+% Desired observer poles
+observer_poles = [-1000, -200, -100];  % Desired observer poles
+
+% Compute observer gain L
+L = place(A', C', observer_poles)';
+
+% Print the observer gain L
+disp('Observer Gain L:');
+disp(L);
+
+% Verify that the observer poles are at the desired locations
+A_observer = A - L * C;              % Observer error dynamics matrix
+observer_eigenvalues = eig(A_observer);
+disp('Observer Error Dynamics Eigenvalues:');
+disp(observer_eigenvalues);
+
 
 %% Integral action
 % Augmented state space (with integral state x_I)
@@ -89,17 +120,31 @@ K_ = place(A_, B_, P);
 Ki  = K_(1);
 K   = K_(2:4);
 
+% Print the controller gains
+disp('Integral Gain Ki:');
+disp(Ki);
+disp('State Feedback Gain K with Integral Action:');
+disp(K);
+
+% Verify that the closed-loop poles are at the desired locations
+Acl_aug = A_ - B_ * K_;
+closed_loop_poles_aug = eig(Acl_aug);
+disp('Closed-loop Eigenvalues with Integral Action:');
+disp(closed_loop_poles_aug);
+
 %% specifications
 tr = 0.05;  % [s]
 Mp = 0.16;  % [%]
 ts = 0.3;   % [s]
 
-% p1  = ...;
-% p2  = ...;
-% P   = [-1000 -800 p1 p2];
-% K_  = ...;
-% Ki  = K_(1);
-% K   = K_(2:4);
+%{
+p1  = -165;
+p2  = -100;
+P   = [-1000 -800 p1 p2];
+K_  = K_ = place(A_, B_, P);
+Ki  = K_(1);
+K   = K_(2:4);
+%}
 
 %% Reference Tracking (not included in lab!)
 N  = 0;
